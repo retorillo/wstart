@@ -1,0 +1,35 @@
+PORT=62000
+JSON="{ \"port\": $PORT }"
+
+if [ "$1" == "" ]; then
+  echo -e '\e[31mWindows Username must be specified\e[0m'
+  exit
+fi
+
+if [ ! -d "/mnt/c/Users/$1" ]; then
+  echo -e "\e[31mNot found: /mnt/c/Users/$1\e[0m"
+  exit
+fi
+
+rm -rf ~/.wstart
+mkdir ~/.wstart
+chmod 700 ~/.wstart
+cd ~/.wstart
+mkdir ca
+openssl genrsa -out key.pem 2048
+openssl req -new -sha256 -key key.pem -subj /CN=localhost -out csr.pem
+openssl x509 -req -in csr.pem -signkey key.pem -out cert.pem
+echo $JSON > wstart.json
+
+WIN=/mnt/c/Users/$1/.wstart
+rm -rf $WIN
+mkdir $WIN 
+cd $WIN
+mkdir ca
+openssl genrsa -out key.pem 2048
+openssl req -new -sha256 -key key.pem -subj /CN=localhost -out csr.pem
+openssl x509 -req -in csr.pem -signkey key.pem -out cert.pem
+echo $JSON > wstart.json
+
+cp ./cert.pem ~/.wstart/ca/windows.pem
+cp ~/.wstart/cert.pem ./ca/ubuntu.pem

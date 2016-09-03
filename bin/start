@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+const os = require('os');
+const runas = {
+	win32: require('../server.js'),
+	linux: require('../client.js'),
+};
+runas[os.platform()]();
