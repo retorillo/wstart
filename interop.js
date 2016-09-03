@@ -15,9 +15,9 @@ function winenv(name) {
   return '';
 }
 function winexpand(win) {
-	return ubuntu.replace(/%([^%]+)%/, (m, g1) => {
-		return env(g1);
-	});
+  return ubuntu.replace(/%([^%]+)%/, (m, g1) => {
+    return env(g1);
+  });
 }
 function ub2win(ubuntu, ubenv) {
   ubuntu = ubuntu.replace(/^\/mnt\/([a-z])(?=\/|$)/, (m, g1) => {
@@ -29,13 +29,13 @@ function ub2win(ubuntu, ubenv) {
   ubuntu = ubuntu.replace(/^\/(home|root)(?=\/|$)/, (m, g1) => {
     return path.win32.join(winenv('LOCALAPPDATA'), 'lxss', g1);
   });
-	ubuntu = ubexpand(ubuntu, ubenv);
+  ubuntu = ubexpand(ubuntu, ubenv);
   return ubuntu.replace(/\//g, '\\');
 }
 function ubexpand(ubuntu, ubenv) {
-	return ubuntu.replace(/\$(?:([a-z0-9_]+)|\{([a-z0-9_]+)\})/i, 
-		(m, g1, g2) => {
-			var name = g1 || g2;
-			return ubenv[name] === undefined ? m : ubenv[name]
-		});
+  return ubuntu.replace(/\$(?:([a-z0-9_]+)|\{([a-z0-9_]+)\})/i, 
+    (m, g1, g2) => {
+      var name = g1 || g2;
+      return ubenv[name] === undefined ? m : ubenv[name]
+    });
 }

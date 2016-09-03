@@ -24,16 +24,16 @@ BashとWindowsどちらの環境にもNode.jsをインストールしてくだ�
 Bash上で次のコマンドを実行してください。
 `<WINUSERNAME>`の箇所にはWindowsユーザー名を指定してください。
 
-```
+```bash
 sudo apt-get update
-sudo apt-get install openssh -y
+sudo apt-get install openssl -y
 npm install -g wstart
 wstart-init <WINUSERNAME>
 ```
 
 Windows上で次のコマンドを実行してください
 
-```
+```bash
 npm install -g wstart
 ```
 
@@ -54,7 +54,7 @@ Bash上で`wstart`を使用する場合は以下の2通りの方法がありま�
 
 `wstart ! cmd`のように感嘆符 `!` を使用することで、Bash内でコマンドや対話シェルを実行することができます。
 
-- Vim上で実行する場合は `:!wstart \! cmd`として、アスタリスクをエスケープする必要がある点にご注意ください。
+- Vim上で実行する場合は `:!wstart \! cmd`として、感嘆符をエスケープする必要がある点にご注意ください。
 
 ## 自動パス変換
 

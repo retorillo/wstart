@@ -38,7 +38,7 @@ wstart-init <WINUSERNAME>
 
 on Windows:
 
-```
+```bash
 npm install -g wstart
 ```
 
