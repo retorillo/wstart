@@ -10,17 +10,25 @@ function readca() {
       ca.push(fs.readFileSync(path.join(confdir, 'ca', f)));
   return ca;
 }
-
-function readconf() {
+function pems() {
   var key = path.join(confdir, 'key.pem')
   var cert = path.join(confdir, 'cert.pem')
-  var json = path.join(confdir, 'wstart.json');
   return {
     key: fs.readFileSync(key),
     cert: fs.readFileSync(cert),
     ca: readca(),
-    json: require(json),
   }
 }
+function json() {
+  var json = path.join(confdir, 'wstart.json');
+  return require(json);
+}
+function pkg() {
+  return require('./package.json');
+}
 
-module.exports = readconf;
+module.exports = {
+  pems: pems,
+  json: json,
+  pkg: pkg,
+}

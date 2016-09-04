@@ -4,8 +4,10 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
+const fork = require('child_process').fork;
 const interopPath = require('./interop.js')
 const assert = require('assert');
+const assets = require('./assets.js');
 
 module.exports = runas;
 
@@ -15,25 +17,22 @@ function logger(){
   var count = 0;
   this.log = function (value) {
     console.log(`${now.toISOString()} [${++count}] ${value}`);
+    return this;
   }
 }
 
 function runas() {
-  var conf = require('./conf.js')();
-  var serveropt = {
-      key: conf.key,
-      cert: conf.cert,
-      ca: conf.ca,
-      requestCert: true,
-      rejectUnauthorized: true,
-  };
+  var serveropt = assets.pems();
+  serveropt.requestCert = true;
+  serveropt.rejectUnauthorized = true;
+
   var server = new tls.createServer(serveropt, socket => {
     assert(socket.authorized);
-    var spawnInfo;
+    var child;
 
     socket.setEncoding('utf8');
     socket.on('data', data => {
-      if (spawnInfo) return;
+      if (child) return;
 
       var log = new logger().log;
       var d
@@ -42,48 +41,60 @@ function runas() {
       }
       catch (e) {
         console.log(e);
+        socket.end();
         return;
       }
+
       var peer = socket.getPeerCertificate();
-      log(`from: ${peer.subject.CN}(${peer.fingerprint})`);
+      log(`from: ${peer.subject.CN} (${peer.fingerprint})`);
+
+      if (!d.version || d.version !== assets.pkg().version) {
+        socket.write('PIP'); // To warn on bash, enter the dummy PIPE mode.
+        var comp = `${assets.pkg().version} server / ${d.version || "1.0.0"} client`;
+        var msg = `Version unmatched, try "npm update -g wstart" (${comp})`;
+        socket.write(`${msg}\n`);
+        log(`failed: ${msg}`);
+        socket.end();
+        return;
+      }
+
       var wdir = interopPath.ub2win(d.cwd, d.env);
       process.chdir(wdir);
       log(`chdir: ${process.cwd()}`);
 
       socket.write('PIP');
-
       if (d.args.length > 0 && d.args[0] === '!') {
         d.args.shift(); // Remove leading exclamation mark
 
         if (d.args.length === 0)
           d.args = [ 'cmd' ];
 
-        spawnInfo = {
-          message: JSON.stringify(d.args),
-        };
+        var spawncmd = JSON.stringify(d.args);
 
-        log(`start: ${ spawnInfo.message }`);
-
-        proc = spawn(d.args.shift(), d.args, { shell: true });
-        spawnInfo.proc = proc;
-        proc.on('error', (err) => {
+        child = spawn(d.args.shift(), d.args, { shell: 'cmd' });
+        log(`start: ${ spawncmd }`);
+        child.on('error', (err) => {
           socket.write(`${err.toString()}\n`);
           log(`failed: ${ err }`);
         });
-        proc.on('close', () => {
-          log(`end: ${ spawnInfo.message }`);
+        child.on('close', () => {
+          log(`end: ${ spawncmd }`);
           socket.end();
         });
-        proc.stdout.on('data', data => {
+        child.stdout.on('data', data => {
           socket.write(data.toString());
         });
-        proc.stderr.on('data', data => {
+        child.stderr.on('data', data => {
           socket.write(data.toString());
+        });
+        socket.on('close', () => {
+          // child.kill() cannot terminate process tree.
+          spawn('taskkill', [ '/pid', child.pid , '/t', '/f'], { shell: 'cmd' });
         });
         socket.on('error', (err) => {
           log(`error (socket): ${ err }`);
         });
-        socket.pipe(proc.stdin);
+        socket.pipe(child.stdin);
       }
       else {
         var args = ['/c', 'start'].concat(d.args.map(a => { 
@@ -101,7 +112,11 @@ function runas() {
       }
     });
   });
-  server.listen(conf.json.port, () => {
-    new logger().log(`Listening on port ${conf.json.port}`)
+  
+  new logger()
+    .log(`Starting server ${ assets.pkg().version }`)
+  server.listen(assets.json().port, () => {
+    new logger()
+      .log(`Listening on port ${ assets.json().port }`)
   });
 }

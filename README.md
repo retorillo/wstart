@@ -9,9 +9,8 @@ on Ubuntu on Windows.
 `wstart` is constituted with `server` and `client`. On Windows it runs as
 `server`, on Bash it runs as `client`.
 
-This mechanism allows to open Windows Command Processor and folders in new
-window from Bash. Plus, allows to start a Windows command and interactive shell
-on Bash.
+Can open Windows applications in new window from Bash, or run Windows commands
+inside Bash.
 
 ## Requirements
 
@@ -23,7 +22,7 @@ In this document, "Bash" referes "Bash on Ubuntu on Windows"
 
 ## Installation
 
-Node.js must be insalled on both Windows and Bash.
+Node.js must be insalled both on Windows and Bash.
 
 on Bash:
 
@@ -62,8 +61,7 @@ see [Path conversion](#path-conversion).
 
 ### Inside Bash
 
-By using exclamation mark (`!`) like `wstart ! cmd`, in Bash, can run commands
-and interactive shells.
+By using exclamation mark (`!`) like `wstart ! cmd`, can run commands inside Bash.
 
 - In Vim, note that `!` must be escaped like `:!wstart \! cmd`.
 
@@ -76,7 +74,7 @@ For example, `wstart echo ~/` will says `C:\Users\YourName`,
 
 This is convenient, but might be unexpected in some case.
 
-To surpress this, use atmark(@) as prefix for each parameters.
+To surpress this, use atmark(`@`) as prefix for each parameters.
 (eg. `wstart echo @/mnt/c` says `/mnt/c`)
 
 If want to pass parameter that start with atmark, must enter atmark twice.
@@ -96,7 +94,11 @@ I recommend to close `server` if not required.
 Port 62000 is used by default, you can change it via the following configuration file.
 
 - `~/.wstart/wstart.json` (Bash)
-- `%USERPROFILE%\.wstart/wstart.json` (Windows)
+- `%USERPROFILE%/.wstart/wstart.json` (Windows)
+
+## Uninstallation
+
+Run `npm uninstall -g wstart` on both environments.
 
 ## License
 
